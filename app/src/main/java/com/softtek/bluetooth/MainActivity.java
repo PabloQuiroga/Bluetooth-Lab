@@ -2,6 +2,7 @@ package com.softtek.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,8 +20,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
     private final String TAG = MainActivity.class.getSimpleName();
@@ -34,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private BluetoothAdapter bluetoothAdapter;
     private List<BluetoothDevice> devices;
     private AdapterDevice lista;
+
+    private BluetoothSocket btSocket = null;
+    private static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,8 +199,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         public void onClick(DialogInterface dialog, int which) {
                             try {
                                 boolean isPaired = bluetoothDevice.createBond(); //vinculacion
+                                UUID SPP_UUID = UUID.fromString("00001106-0000-1000-8000-00805F9B34FB");
+                                btSocket = bluetoothDevice.createRfcommSocketToServiceRecord(SPP_UUID);
                             }catch (NullPointerException ex){
                                 Log.e("Vinculacion", "error "+ ex.getMessage());
+                            }catch (IOException e){
+                                Log.e("btSocket asign", "error "+ e.getMessage());
                             }
                         }
                     })
@@ -214,7 +224,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         Toast.makeText(MainActivity.this, "Long click", Toast.LENGTH_SHORT).show();
+        BluetoothMessenger messenger = new BluetoothMessenger(btSocket);
+
+        String example = "Convert Java String";
+        byte[] bytes = example.getBytes();
+        messenger.write(bytes);
         //TODO manejar opciones
+
         return true;
     }
 }
