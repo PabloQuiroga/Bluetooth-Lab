@@ -2,7 +2,6 @@ package com.softtek.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,14 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
     private final String TAG = MainActivity.class.getSimpleName();
@@ -33,7 +32,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private boolean btState;
     private BluetoothAdapter bluetoothAdapter;
-    private ArrayAdapter<BluetoothDevice> arrayAdapter;
+    private List<BluetoothDevice> devices;
+    private AdapterDevice lista;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +54,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             lblListado.setText("no device");
             btnScan.setEnabled(true);
         }
+
+        devices = new ArrayList<>();
+        lista = new AdapterDevice(this, devices);
+        listado.setAdapter(lista);
+        listado.setOnItemClickListener(this);
+        listado.setOnItemLongClickListener(this);
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         registerReceiver(receiverBond, filter);
@@ -96,39 +102,39 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void setEstadoBluetooth(){
-            if (btState) {
-                Log.i("Bluetooth", "desactivando bluetooth");
-                btState = false;
-                setImageBluetooth(false);
-                bluetoothAdapter.disable();
-                btnScan.setEnabled(false);
-                lblListado.setVisibility(View.VISIBLE);
-                listado.setVisibility(View.GONE);
-                lblListado.setText("Bluetooth apagado");
-            }else{
-                Log.i("Bluetooth", "activando bluetooth");
-                btState = true;
-                setImageBluetooth(true);
-                bluetoothAdapter.enable();
-                btnScan.setEnabled(true);
-                lblListado.setVisibility(View.VISIBLE);
-                listado.setVisibility(View.GONE);
-                lblListado.setText("no device");
-            }
+        if (btState) {
+            Log.i("Bluetooth", "desactivado");
+            btState = false;
+            setImageBluetooth(false);
+            bluetoothAdapter.disable();
+            btnScan.setEnabled(false);
+            lblListado.setVisibility(View.VISIBLE);
+            listado.setVisibility(View.GONE);
+            lblListado.setText("Bluetooth apagado");
+            bluetoothAdapter.cancelDiscovery();
+        }else{
+            Log.i("Bluetooth", "activado");
+            btState = true;
+            setImageBluetooth(true);
+            bluetoothAdapter.enable();
+            btnScan.setEnabled(true);
+            lblListado.setVisibility(View.VISIBLE);
+            listado.setVisibility(View.GONE);
+            lblListado.setText("no device");
+        }
     }
 
     public void scanDevice(View view) {
         if(bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
+            devices.clear();
+            bluetoothAdapter.startDiscovery();
 
         }else {
             Toast.makeText(this, "Buscando dispositivos bluetooth", Toast.LENGTH_LONG).show();
-            arrayAdapter = new ArrayAdapter<BluetoothDevice>(this, R.layout.dispositivo_layout);
-            listado.setAdapter(arrayAdapter);
-            listado.setOnItemClickListener(this);
-            listado.setOnItemLongClickListener(this);
-
             // scan device
+            devices.clear();
+            lista.clear();
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             registerReceiver(receiver, filter);
             bluetoothAdapter.startDiscovery();
@@ -143,11 +149,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 listado.setVisibility(View.VISIBLE);
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                arrayAdapter.add(device);
+                lista.add(device);
             }
         }
     };
-    // Crea un BroadcastReceiver para el emparejado
+    // Crea un BroadcastReceiver para el emparejado (usado?) //TODO checkar su uso
     private final BroadcastReceiver receiverBond = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -176,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         bluetoothAdapter.cancelDiscovery();
 
-        final BluetoothDevice bluetoothDevice = arrayAdapter.getItem(position);
+        final BluetoothDevice bluetoothDevice = devices.get(position);
         DeviceItem device = new DeviceItem(bluetoothDevice.getName(), bluetoothDevice.getAddress(), bluetoothDevice.getBondState());
 
         if(device.isEmparejado() != BluetoothDevice.BOND_BONDED){
@@ -208,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         Toast.makeText(MainActivity.this, "Long click", Toast.LENGTH_SHORT).show();
+        //TODO manejar opciones
         return true;
     }
 }

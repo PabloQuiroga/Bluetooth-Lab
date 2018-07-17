@@ -2,11 +2,19 @@ package com.softtek.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-class DeviceItem {
+public class DeviceItem {
     private final int[]state = {BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDING, BluetoothDevice.BOND_BONDED};
     private String name;
     private String address;
     private int estado;
+    BluetoothDevice device;
+
+    public DeviceItem(BluetoothDevice btDevice){
+        this.device = btDevice;
+        this.name = device.getName();
+        this.address = device.getAddress();
+        this.estado = device.getBondState();
+    }
 
     public DeviceItem(String name, String address, int estado) {
         this.name = name;
