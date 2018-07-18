@@ -2,16 +2,20 @@ package com.softtek.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/*
+    Clase utilizada para el manejo de mensajes entre dispositivos
+ */
 public class BluetoothMessenger extends Thread {
 
     private final BluetoothSocket mmSocket;
-    private final InputStream mmInStream;
-    private final OutputStream mmOutStream;
+    private InputStream mmInStream;
+    private OutputStream mmOutStream;
 
     public BluetoothMessenger(BluetoothSocket socket) {
         mmSocket = socket;
@@ -50,6 +54,7 @@ public class BluetoothMessenger extends Thread {
     public void write(byte[] bytes) {
         try {
             mmOutStream.write(bytes);
+            Log.e("mensaje", "enviado");
         } catch (IOException e) { }
     }
 

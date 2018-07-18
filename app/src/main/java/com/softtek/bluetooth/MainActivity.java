@@ -9,11 +9,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -25,6 +29,92 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+
+    private ListView listadoDevice;
+    private TextView txtDevice;
+
+    private ManagerBluetooth managerBluetooth;
+
+    private List<BluetoothDevice> lista;
+    private AdapterDevice adapter;
+    private boolean estado;
+
+    /******************* MENU INICIO***************************/
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_activar) {
+            managerBluetooth.activar();
+
+            txtDevice.setText("Bluetooth encendido");
+
+            return true;
+        }
+        if (id == R.id.action_buscar) {
+
+            if(estado == false){
+                managerBluetooth.scanDevices();
+                txtDevice.setText("Buscando dispositivos");
+            }
+
+            return true;
+        }
+        if (id == R.id.action_desactivar) {
+            managerBluetooth.desactivar();
+
+            txtDevice.setVisibility(View.VISIBLE);
+            listadoDevice.setVisibility(View.GONE);
+            txtDevice.setText("Bluetooth apagado");
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    /********************* MENU FIN ****************************/
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        listadoDevice = (ListView)findViewById(R.id.listado_device);
+        txtDevice = (TextView)findViewById(R.id.lbl_devices);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        managerBluetooth = new ManagerBluetooth(this);
+        lista = managerBluetooth.getDevices();
+        adapter = new AdapterDevice(this, lista);
+        listadoDevice.setAdapter(adapter);
+
+        estado = managerBluetooth.getEstado();
+        if(estado){
+            txtDevice.setText("Bluetooth encendido");
+        }else{
+            txtDevice.setVisibility(View.VISIBLE);
+            listadoDevice.setVisibility(View.GONE);
+            txtDevice.setText("Bluetooth apagado");
+        }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        //TODO manejar eventos de dispositivo aqui
+    }
+}
+/*
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -233,4 +323,4 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         return true;
     }
-}
+}*/

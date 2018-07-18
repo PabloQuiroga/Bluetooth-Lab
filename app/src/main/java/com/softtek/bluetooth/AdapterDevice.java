@@ -17,7 +17,6 @@ import java.util.List;
 public class AdapterDevice extends ArrayAdapter<BluetoothDevice> {
 
     TextView txtNombre;
-    TextView txtState;
 
     public AdapterDevice (Context context, List<BluetoothDevice> deviceItems) {
         super(context, 0, deviceItems);
@@ -31,21 +30,11 @@ public class AdapterDevice extends ArrayAdapter<BluetoothDevice> {
         }
 
         txtNombre = (TextView)view.findViewById(R.id.lbl_name);
-        txtState = (TextView)view.findViewById(R.id.lbl_state);
 
         BluetoothDevice item = getItem(position);
         String nombre = item.getName();
-        String estado;
-        if(item.getBondState() == 12){
-            estado = "Vinculado";
-            txtState.setTextColor(Color.GREEN);
-        }else{
-            estado = "No vinculado";
-            txtState.setTextColor(Color.RED);
-        }
 
         txtNombre.setText(nombre);
-        txtState.setText(estado);
 
         return view;
     }
