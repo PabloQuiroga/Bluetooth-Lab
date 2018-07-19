@@ -2,12 +2,15 @@ package com.softtek.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,15 +19,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
 
+    private static final UUID MY_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
     private ListView listadoDevice;
     private TextView txtDevice;
 
@@ -47,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
         if (id == R.id.action_buscar) {
             if(estado){
-                scanDevice();
+                scanDevice2();
                 //adapter.notifyDataSetChanged();
                 //txtDevice.setText(R.string.BTsearch);
             }
@@ -123,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void scanDevice() {
         if(bluetoothAdapter.isDiscovering()) {
+
             //bluetoothAdapter.cancelDiscovery();
             //lista = new ArrayList<>();
             //adapter.clear();
@@ -156,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //adapter.notifyDataSetChanged();
         }
     };
+
 
 
     @Override
@@ -206,5 +215,49 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         */
 
         return true;
+    }
+
+    // TODO aca empiezo a meter lio xD
+
+    public void scanDevice2(){
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        ArrayList<String> devices = new ArrayList<>();
+        for(BluetoothDevice bt : pairedDevices){
+            devices.add(bt.getName());
+        }
+        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, devices);
+        listadoDevice.setAdapter(arrayAdapter);
+        Log.e("SCAN2","");
+    }
+
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            return true;
+        }
+    });
+
+    private class ClientClass extends Thread{
+        private BluetoothDevice device;
+        private BluetoothSocket socket;
+
+        public ClientClass(BluetoothDevice bluetoothDevice){
+            device = bluetoothDevice;
+            try{
+                socket = device.createRfcommSocketToServiceRecord(MY_UUID);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void run() {
+            try{
+                socket.connect();
+                Log.e("Socket", ""+socket.isConnected());
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
