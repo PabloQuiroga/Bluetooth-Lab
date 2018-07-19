@@ -7,11 +7,7 @@
         android:orderInCategory="100"
         android:title="Activar"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_buscar"
-        android:orderInCategory="100"
-        android:title="Buscar"
-        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_desactivar"
         android:orderInCategory="100"

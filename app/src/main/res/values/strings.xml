@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Supper App BT</string>
+    <string name="app_name">App BT</string>
 
     <string name="BTstateOn">Bluetooth encendido</string>
     <string name="BTsearch">Buscando dispositivos</string>
